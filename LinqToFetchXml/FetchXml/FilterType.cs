@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LinqToFetchXml
+namespace gugi.LinqToFetchXml.FetchXml
 {
-    public class Class1
+    public enum FilterType
     {
+        and,
+        or
     }
 }

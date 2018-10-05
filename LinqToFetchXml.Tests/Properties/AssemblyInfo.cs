@@ -4,12 +4,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("LinqToFetchXml")]
+[assembly: AssemblyTitle("LinqToFetchXml.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("LinqToFetchXml")]
-[assembly: AssemblyCopyright("Agust Hoxha Copyright ©  2018")]
+[assembly: AssemblyProduct("LinqToFetchXml.Tests")]
+[assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("56d38a73-68ad-4d34-98f6-154f89f53a22")]
+[assembly: Guid("03565863-4ad9-46a9-903f-7517a9ee947a")]
 
 // Version information for an assembly consists of the following four values:
 //
