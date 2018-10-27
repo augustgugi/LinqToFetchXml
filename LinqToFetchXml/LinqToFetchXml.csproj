@@ -63,24 +63,38 @@
     <Compile Include="Extensions\FetchXmlExtensions.cs" />
     <Compile Include="FetchXmlSet.cs" />
     <Compile Include="FetchXml\FilterType.cs" />
+    <Compile Include="Interfaces\IFetchXmlSet.cs" />
     <Compile Include="Metadata\EntityModelType.cs" />
     <Compile Include="Metadata\TypeEntityMapping.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QueryGeneration\Clauses\FilterTypeClause.cs" />
-    <Compile Include="QueryGeneration\CommandData.cs" />
+    <Compile Include="QueryGeneration\Models\LinkEntity.cs" />
+    <Compile Include="QueryGeneration\Models\OrderAttribute.cs" />
+    <Compile Include="QueryGeneration\Models\SelectAttributes.cs" />
+    <Compile Include="Query\Clauses\FilterTypeClause.cs" />
     <Compile Include="QueryGeneration\FetchXmlExpressionTreeVisitor.cs" />
     <Compile Include="QueryGeneration\FetchXmlQueryModelVisitor.cs" />
-    <Compile Include="QueryGeneration\NodeProviders\FilterTypeNodeProvider.cs" />
-    <Compile Include="QueryGeneration\NodeProviders\NodeProviderBase.cs" />
-    <Compile Include="QueryGeneration\QueryPartsAggregator.cs" />
+    <Compile Include="Query\Clauses\SelectAttributesClause.cs" />
+    <Compile Include="Query\CustomClauseVisitors\MainFromEntityClauseVisitor.cs" />
+    <Compile Include="Query\CustomClauseVisitors\SelectEntityClauseVisitor.cs" />
+    <Compile Include="Query\CustomClauseVisitors\WhereClauseEntityVisitor.cs" />
+    <Compile Include="Query\CustomExpressionTreeVisitors\MainFromEntityExpressionTreeVisitor.cs" />
+    <Compile Include="Query\CustomExpressionTreeVisitors\SelectEntityExpressionTreeVisitor.cs" />
+    <Compile Include="Query\CustomExpressionTreeVisitors\WhereExpressionVisitor.cs" />
+    <Compile Include="Query\NodeProviders\FilterTypeNodeProvider.cs" />
+    <Compile Include="Query\NodeProviders\NodeProviderBase.cs" />
+    <Compile Include="QueryGeneration\QueryMetadata.cs" />
     <Compile Include="Query\CustomClauseVisitors\JoinClauseVisitor.cs" />
     <Compile Include="Query\CustomExpressionTreeVisitors\JoinExpressionTreeVisitor.cs" />
     <Compile Include="Query\Executor\FetchXmlQueryExecutor.cs" />
     <Compile Include="Query\Executor\ICustomFetchXmlQueryExecutor.cs" />
+    <Compile Include="Query\FetchXmlQueryParserLoader.cs" />
+    <Compile Include="Query\NodeProviders\SelectAttributesNodeProviders.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Query\Parsers\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

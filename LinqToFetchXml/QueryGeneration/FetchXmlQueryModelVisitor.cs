@@ -1,35 +1,87 @@
 ﻿using gugi.LinqToFetchXml.Metadata;
 using gugi.LinqToFetchXml.Query.CustomClauseVisitors;
-using gugi.LinqToFetchXml.QueryGeneration.Clauses;
-using gugi.LinqToFetchXml.QueryGeneration.NodeProviders;
+using gugi.LinqToFetchXml.Query.Clauses;
+using gugi.LinqToFetchXml.Query.NodeProviders;
 using Remotion.Linq;
 using Remotion.Linq.Clauses;
 using Remotion.Linq.Clauses.ResultOperators;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq.Expressions;
+using gugi.LinqToFetchXml.Query.CustomClauseVisitors.Entity;
 
 namespace gugi.LinqToFetchXml.QueryGeneration
 {
     internal class FetchXmlQueryModelVisitor : QueryModelVisitorBase
     {
-        private readonly QueryPartsAggregator _queryParts = new QueryPartsAggregator();
+        private readonly QueryMetadata _queryMetadata = new QueryMetadata();
 
-        internal static CommandData GetCommand(QueryModel queryModel)
+        internal static QueryMetadata GetQueryMetadata(QueryModel queryModel)
         {
             var visitor = new FetchXmlQueryModelVisitor();
             visitor.VisitQueryModel(queryModel);
             return visitor.GetFetchXmlCommand();
         }
 
-        internal CommandData GetFetchXmlCommand()
+        internal QueryMetadata GetFetchXmlCommand()
         {
-            return new CommandData(_queryParts);
+            return _queryMetadata;
+        }
+
+        public override void VisitQueryModel(QueryModel queryModel)
+        {
+            VisitMainFromClause(queryModel.MainFromClause, queryModel);
+            VisitBodyClauses(queryModel.BodyClauses, queryModel);
+            VisitSelectClause(queryModel.SelectClause, queryModel);
+            VisitResultOperators(queryModel.ResultOperators, queryModel);
+        }
+
+        public override void VisitMainFromClause(MainFromClause fromClause, QueryModel queryModel)
+        {
+
+            MainFromEntityClauseVisitor mainFromEntityClauseVisitor = new MainFromEntityClauseVisitor(fromClause, queryModel);
+            _queryMetadata.EntityName = mainFromEntityClauseVisitor.EntityLogicalName;
+            _queryMetadata.EntityType = mainFromEntityClauseVisitor.EntityType;
+        }
+
+        protected override void VisitBodyClauses(ObservableCollection<IBodyClause> bodyClauses, QueryModel queryModel)
+        {
+            foreach (IBodyClause bodyClause in bodyClauses)
+            {
+                if (bodyClause is FilterTypeClause)
+                {
+                    var filterTypeClause = bodyClause as FilterTypeClause;
+                    _queryMetadata.FilterType = GetFetchXmlExpression(filterTypeClause.Expression);
+                }
+                else if(bodyClause is SelectAttributesClause)
+                {
+                    var actualClause = bodyClause as SelectAttributesClause;
+                }
+            }
+            base.VisitBodyClauses(bodyClauses, queryModel);
+        }
+
+        public override void VisitSelectClause(SelectClause selectClause, QueryModel queryModel)
+        {
+            SelectEntityClauseVisitor selectEntityClauseVisitor = new SelectEntityClauseVisitor(selectClause, queryModel);
+            foreach (var entity in selectEntityClauseVisitor.EntityAttributes.Keys)
+            {
+                _queryMetadata.AddSelectAttributes(entity, selectEntityClauseVisitor.EntityAttributes[entity].ToArray());
+            }
+
+            var selectT = selectClause.GetOutputDataInfo();
+            _queryMetadata.ReturningType = selectT.ResultItemType;
+            base.VisitSelectClause(selectClause, queryModel);
+        }
+
+        protected override void VisitResultOperators(ObservableCollection<ResultOperatorBase> resultOperators, QueryModel queryModel)
+        {
+            base.VisitResultOperators(resultOperators, queryModel);
         }
 
         public override void VisitAdditionalFromClause(AdditionalFromClause fromClause, QueryModel queryModel, int index)
         {
-            _queryParts.AddFromPart(fromClause);
+            _queryMetadata.AddFromPart(fromClause);
 
             base.VisitAdditionalFromClause(fromClause, queryModel, index);
         }
@@ -45,13 +97,7 @@ namespace gugi.LinqToFetchXml.QueryGeneration
 
             JoinClauseVisitor joinClauseVisitor = new JoinClauseVisitor(joinClause, queryModel, index);
 
-            _queryParts.AddJoin(joinClauseVisitor.Index, joinClauseVisitor.FromEntity, joinClauseVisitor.FromAttribute, joinClauseVisitor.ToEntity, joinClauseVisitor.ToAttribute);
-
-            //_queryParts.AddFromPart(joinClause);
-            //_queryParts.AddWherePart(
-            //    "({0} = {1})",
-            //    GetFetchXmlExpression(joinClause.OuterKeySelector),
-            //    GetFetchXmlExpression(joinClause.InnerKeySelector));
+            _queryMetadata.AddJoin(joinClauseVisitor.FromEntity, joinClauseVisitor.FromAttribute, joinClauseVisitor.ToEntity, joinClauseVisitor.ToAttribute);
 
             base.VisitJoinClause(joinClause, queryModel, index);
         }
@@ -61,39 +107,16 @@ namespace gugi.LinqToFetchXml.QueryGeneration
             base.VisitJoinClause(joinClause, queryModel, groupJoinClause);
         }
 
-        public override void VisitMainFromClause(MainFromClause fromClause, QueryModel queryModel)
-        {
-            EntityModelType entityName = null;
-                
-            TypeEntityMapping.Instance.Value.TryGetValue(fromClause.ItemType, out entityName);
-
-
-            _queryParts.AddMainPart(entityName.EntityLogicalName);
-
-            base.VisitMainFromClause(fromClause, queryModel);
-        }
-
         public override void VisitOrderByClause(OrderByClause orderByClause, QueryModel queryModel, int index)
         {
-            //_queryParts.AddOrderByPart(orderByClause.Orderings.Select(o => GetFetchXmlExpression(o.Expression)));
-
             base.VisitOrderByClause(orderByClause, queryModel, index);
         }
 
         public override void VisitOrdering(Ordering ordering, QueryModel queryModel, OrderByClause orderByClause, int index)
         {
-
-            _queryParts.AddOrderByPart(GetFetchXmlExpression(ordering.Expression), ordering.OrderingDirection == OrderingDirection.Desc, index);
+            _queryMetadata.AddOrderByPart(GetFetchXmlExpression(ordering.Expression), ordering.OrderingDirection == OrderingDirection.Desc, index);
 
             base.VisitOrdering(ordering, queryModel, orderByClause, index);
-        }
-
-        public override void VisitQueryModel(QueryModel queryModel)
-        {
-            queryModel.SelectClause.Accept(this, queryModel);
-            queryModel.MainFromClause.Accept(this, queryModel);
-            VisitBodyClauses(queryModel.BodyClauses, queryModel);
-            VisitResultOperators(queryModel.ResultOperators, queryModel);
         }
 
         public override void VisitResultOperator(ResultOperatorBase resultOperator, QueryModel queryModel, int index)
@@ -101,44 +124,24 @@ namespace gugi.LinqToFetchXml.QueryGeneration
             if (resultOperator is TakeResultOperator)
             {
                 var takeResul = resultOperator as TakeResultOperator;
-                _queryParts.Take = int.Parse(GetFetchXmlExpression(takeResul.Count));
+                _queryMetadata.Take = int.Parse(GetFetchXmlExpression(takeResul.Count));
+            } else if (resultOperator is CountResultOperator)
+            {
+                _queryMetadata.IsCount = true;
             }
             base.VisitResultOperator(resultOperator, queryModel, index);
-        }
-        public override void VisitSelectClause(SelectClause selectClause, QueryModel queryModel)
-        {
-            //_queryParts.SelectPart = GetFetchXmlExpression(selectClause.Selector);
-
-            base.VisitSelectClause(selectClause, queryModel);
         }
 
         public override void VisitWhereClause(WhereClause whereClause, QueryModel queryModel, int index)
         {
-            _queryParts.AddWhereParts(GetFetchXmlExpression(whereClause.Predicate));
+            WhereClauseEntityVisitor whereClauseEntityVisitor = new WhereClauseEntityVisitor(whereClause, queryModel);
 
-            base.VisitWhereClause(whereClause, queryModel, index);
-        }
-        protected override void VisitBodyClauses(ObservableCollection<IBodyClause> bodyClauses, QueryModel queryModel)
-        {
-            foreach (IBodyClause bodyClause in bodyClauses)
-            {
-                if (bodyClause is FilterTypeClause)
-                {
-                    var filterTypeClause = bodyClause as FilterTypeClause;
-                    _queryParts.FilterType = GetFetchXmlExpression(filterTypeClause.Expression);
-                }
-            }
-            base.VisitBodyClauses(bodyClauses, queryModel);
+            _queryMetadata.AddWhereParts(whereClauseEntityVisitor.Filters);
         }
 
         protected override void VisitOrderings(ObservableCollection<Ordering> orderings, QueryModel queryModel, OrderByClause orderByClause)
         {
             base.VisitOrderings(orderings, queryModel, orderByClause);
-        }
-
-        protected override void VisitResultOperators(ObservableCollection<ResultOperatorBase> resultOperators, QueryModel queryModel)
-        {
-            base.VisitResultOperators(resultOperators, queryModel);
         }
 
         private string GetFetchXmlExpression(Expression expression)

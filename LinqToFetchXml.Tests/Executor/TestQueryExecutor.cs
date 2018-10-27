@@ -1,4 +1,5 @@
 ﻿using gugi.LinqToFetchXml.Query.Executor;
+using LinqToFetchXml.Tests.Mappers;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System;
@@ -21,18 +22,14 @@ namespace LinqToFetchXml.Tests.Executor
         {
             EntityCollection entityCollection = _organizationService.RetrieveMultiple(new FetchExpression(fetchXml));
 
-            foreach (var ent in entityCollection.Entities)
+            if (typeof(T) == typeof(Entity))
             {
-                dynamic a = Activator.CreateInstance(typeof(T));
-                a.Id = ent.Id;
-                a.Attributes = new AttributeCollection();
-                foreach (var attr in ent.Attributes)
-                {
-                    a.Attributes[attr.Key] = attr.Value;
-                };
-
-                yield return a;
+                return (IEnumerable<T>)entityCollection.Entities.AsEnumerable();
             }
+
+            var result = CustomEntityModelMapper.ToModel<T>(entityCollection.Entities.ToList());
+
+            return result;
         }
     }
 }

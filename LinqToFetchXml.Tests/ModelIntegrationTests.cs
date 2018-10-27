@@ -2,6 +2,7 @@
 using gugi.LinqToFetchXml;
 using gugi.LinqToFetchXml.Extensions;
 using gugi.LinqToFetchXml.FetchXml;
+using LinqToFetchXml.Tests.Metadata;
 using LinqToFetchXml.Tests.Models;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
@@ -13,12 +14,12 @@ using Xunit;
 
 namespace LinqToFetchXml.Tests
 {
-    public class IntegrationTests
+    public class ModelIntegrationTests
     {
 
         private XrmFakedContext fakedContext;
         private IOrganizationService organizationService;
-        private TestContext testContext;
+        private TestModelContext testContext;
 
 
         BusinessUnit bu = null;
@@ -26,43 +27,44 @@ namespace LinqToFetchXml.Tests
         User Agust = null;
         User Andrea = null;
 
-        public IntegrationTests()
+        public ModelIntegrationTests()
         {
             fakedContext = new XrmFakedContext();
+            fakedContext.SetEntityMetadata(BusinessUnitMetadata.GetMetadata());
             //fakedContext.ProxyTypesAssembly = Assembly.GetExecutingAssembly();
 
             organizationService = fakedContext.GetFakedOrganizationService();
-            testContext = new TestContext(organizationService);
+            testContext = new TestModelContext(organizationService);
 
             bu = new BusinessUnit()
             {
                 _name = "GG"
             };
-            bu.buid = Create(bu);
+            bu.Id = testContext.Create(bu);
 
             t = new Team()
             {
                 _name = "GUGI"
             };
-            t.teamid = Create(t);
+            t.Id = testContext.Create(t);
 
             Agust = new User()
             {
                 _name = "Agust",
-                _bu = bu.Id,
-                _teamid = t.Id
+                _bu = new EntityReference("", bu.Id),
+                _teamid = new EntityReference("", t.Id),
             };
 
-            Agust.systemuserid = Create(Agust);
+            Agust.Id = testContext.Create(Agust);
 
             Andrea = new User()
             {
                 _name = "Andrea",
-                _bu = bu.Id,
-                _teamid = t.Id
+                _bu = new EntityReference("", bu.Id),
+                _teamid = new EntityReference("", t.Id),
             };
 
-            Andrea.systemuserid = Create(Andrea);
+            Andrea.Id = testContext.Create(Andrea);
         }
 
         [Fact]
@@ -104,7 +106,7 @@ namespace LinqToFetchXml.Tests
         public void SelectWhereMultiple2Test()
         {
             var p = from u in testContext.Users
-                    where (u._name == "Agust" || u._name == "David") && u.systemuserid == Agust.systemuserid
+                    where (u._name == "Agust" || u._name == "David") && u.Id == Agust.Id
                     select u;
 
             var users = p.ToList();
@@ -115,9 +117,9 @@ namespace LinqToFetchXml.Tests
         [Fact]
         public void SelectWhere_Guid_Initialized_In_PredicateTest()
         {
-            Guid gg = new Guid(Agust.systemuserid.ToString());
+            Guid gg = new Guid(Agust.Id.ToString());
             var p = from u in testContext.Users
-                    where u.systemuserid == new Guid(Agust.systemuserid.ToString())
+                    where u.Id == new Guid(Agust.Id.ToString())
                     select u;
 
             var users = p.ToList();
@@ -128,10 +130,10 @@ namespace LinqToFetchXml.Tests
         [Fact]
         public void SelectWhere_Guid_Pre_Initialized_In_PreicateTest()
         {
-            Guid gg = new Guid(Agust.systemuserid.ToString());
+            Guid gg = new Guid(Agust.Id.ToString());
 
             var p = from u in testContext.Users
-                    where u.systemuserid == gg
+                    where u.Id == gg
                     select u;
 
             var users = p.ToList();
@@ -145,7 +147,7 @@ namespace LinqToFetchXml.Tests
 
             var p = testContext.Users
                     .SetFilterType(FilterType.or)
-                    .Where(u => u.systemuserid == new Guid(Agust.systemuserid.ToString()));
+                    .Where(u => u.Id == new Guid(Agust.Id.ToString()));
 
             var expr = p.Expression;
 
@@ -161,7 +163,7 @@ namespace LinqToFetchXml.Tests
 
             var p = testContext.Users
                     .OrderByDescending(u => "name")
-                    .ThenByDescending(u => u.systemuserid);
+                    .ThenByDescending(u => u.Id);
 
             var expr = p.Expression;
 
@@ -198,14 +200,25 @@ namespace LinqToFetchXml.Tests
         }
 
         [Fact]
+        public void Count_Test()
+        {
+
+            var p = testContext.Users
+                .Take(2)
+                .Count();
+
+            Assert.True(p == 2);
+        }
+
+        [Fact]
         public void Join_Linq_Test()
         {
             Guid gg = new Guid("2B8896AD-11B1-4FE6-879C-0B4FCFDC0540");
 
             var p = testContext.Users
                 .Join(testContext.Teams, 
-                u => u._teamid, 
-                t => t.teamid, 
+                u => u._teamid.Id, 
+                t => t.Id, 
                 (u, t) => u);
 
             var expr = p.Expression;
@@ -222,7 +235,7 @@ namespace LinqToFetchXml.Tests
 
             var p = from u in testContext.Users
                     join t in testContext.Teams
-                    on u._teamid equals t.teamid
+                    on u._teamid.Id equals t.Id
                     select u;
 
             var expr = p.Expression;
@@ -232,16 +245,15 @@ namespace LinqToFetchXml.Tests
             Assert.NotEmpty(users);
         }
 
-
-        private Guid Create(Entity record)
+        [Fact]
+        public void Select_Custom_Attributes()
         {
-            Entity ent = new Entity(record.LogicalName, record.Id);
-            foreach(var attr in record.Attributes)
-            {
-                ent.Attributes[attr.Key] = attr.Value;
-            }
+            var p = testContext.Users
+                .SelectAttributes(u => new List<object>() { u._name })
+                .ToList();
 
-            return organizationService.Create(ent);
+            Assert.NotNull(p);
         }
+
     }
 }

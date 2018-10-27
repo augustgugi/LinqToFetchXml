@@ -9,38 +9,17 @@ using System.Threading.Tasks;
 namespace LinqToFetchXml.Tests.Models
 {
     [FetchXmlEntityLogicalName("businessunit")]
-    public class BusinessUnit : Entity
+    public class BusinessUnit
     {
-        public static class Metadata
-        {
-            public static string LogicalName = "businessunit";
-        }
 
-        public BusinessUnit() : base(Metadata.LogicalName)
+        public BusinessUnit()
         {
 
         }
 
-        public Guid buid {
-            get
-            {
-                return this.GetAttributeValue<Guid>(nameof(buid));
-            }
-            set
-            {
-                this.Id = value;
-                this.Attributes[nameof(buid)] = value;
-            }
-        }
+        [FetchXmlAttributeLogicalName("buid")]
+        public Guid Id { get; set; }
 
-        public string _name {
-            get
-            {
-                return this.GetAttributeValue<string>(nameof(_name));
-            }
-            set {
-                this.Attributes[nameof(_name)] = value;
-            }
-        }
+        public string _name { get; set; }
     }
 }

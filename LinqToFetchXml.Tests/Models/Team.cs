@@ -9,51 +9,18 @@ using System.Threading.Tasks;
 namespace LinqToFetchXml.Tests.Models
 {
     [FetchXmlEntityLogicalName("team")]
-    public class Team : Entity
+    public class Team
     {
-        public static class Metadata
-        {
-            public static string LogicalName = "team";
-        }
 
-        public Team() : base(Metadata.LogicalName)
+        public Team()
         {
         }
 
-        public Guid teamid
-        {
-            get
-            {
-                return this.GetAttributeValue<Guid>(nameof(teamid));
-            }
-            set
-            {
-                this.Id = value;
-                this.Attributes[nameof(teamid)] = value;
-            }
-        }
+        [FetchXmlAttributeLogicalName("teamid")]
+        public Guid Id { get; set; }
 
-        public string _name
-        {
-            get
-            {
-                return this.GetAttributeValue<string>(nameof(_name));
-            }
-            set
-            {
-                this.Attributes[nameof(_name)] = value;
-            }
-        }
+        public string _name { get; set; }
 
-        public Guid? _bu {
-            get
-            {
-                return this.GetAttributeValue<EntityReference>(nameof(_bu))?.Id;
-            }
-            set
-            {
-                this.Attributes[nameof(_bu)] = new EntityReference(BusinessUnit.Metadata.LogicalName, value.Value);
-            }
-        }
+        public EntityReference _bu { get; set; }
     }
 }

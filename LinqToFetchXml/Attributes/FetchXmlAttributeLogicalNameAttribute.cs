@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace gugi.LinqToFetchXml.Attributes
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public sealed class FetchXmlAttributeLogicalNameAttribute : Attribute
     {
         public FetchXmlAttributeLogicalNameAttribute(string logicalName)

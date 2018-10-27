@@ -1,6 +1,7 @@
 ﻿using gugi.LinqToFetchXml.Attributes;
 using gugi.LinqToFetchXml.Metadata;
 using gugi.LinqToFetchXml.Query.Executor;
+using gugi.LinqToFetchXml.Query.Parsers;
 using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ namespace gugi.LinqToFetchXml
 
         protected FetchXmlSet<Entity> CreateQuery(string entityLogicalName)
         {
-            FetchXmlSet<Entity> set = new FetchXmlSet<Entity>(entityLogicalName, _fetchXmlQueryExecutor);
+            FetchXmlSet<Entity> set = new FetchXmlSet<Entity>(entityLogicalName, FetchXmlQueryParserLoader.CreateFetchXmlQueryParser(), _fetchXmlQueryExecutor);
 
             return set;
         }
@@ -35,7 +36,7 @@ namespace gugi.LinqToFetchXml
         {
             string entityLogicalName = GetLogicalName<T>();
 
-            FetchXmlSet<T> set = new FetchXmlSet<T>(entityLogicalName, _fetchXmlQueryExecutor);
+            FetchXmlSet<T> set = new FetchXmlSet<T>(entityLogicalName, FetchXmlQueryParserLoader.CreateFetchXmlQueryParser(), _fetchXmlQueryExecutor);
 
             return set;
         }
@@ -58,27 +59,38 @@ namespace gugi.LinqToFetchXml
 
             FetchXmlEntityLogicalNameAttribute fetchXmlEntityLogicalNameAttribute = (FetchXmlEntityLogicalNameAttribute)entityLogicalNameAttribute;
             string entityLogicalName = fetchXmlEntityLogicalNameAttribute.LogicalName;
+            UpdateMetadata(currentType, entityLogicalName);
+
+            return entityLogicalName;
+        }
+
+        private void UpdateMetadata(Type currentType, string entityLogicalName)
+        {
             EntityModelType entityModelType = new EntityModelType(entityLogicalName);
 
             IEnumerable<PropertyInfo> properties = currentType
                                                             .GetProperties()
                                                             .Where(pi => pi.CanRead);
-            foreach(var currentPropertyInfo in properties)
+            foreach (var currentPropertyInfo in properties)
             {
-
-                string attributeLogicalName = currentPropertyInfo.Name.ToLowerInvariant();
-                var attributeLogicalNameAttribute = currentPropertyInfo.GetCustomAttribute<FetchXmlAttributeLogicalNameAttribute>(true);
-                if (attributeLogicalNameAttribute != null)
-                {
-                    attributeLogicalName = attributeLogicalNameAttribute.LogicalName;
-                }
+                string attributeLogicalName = GetCRMAttributeLogicalName(currentPropertyInfo);
 
                 entityModelType.ParameterToAttributeLogicalName.Add(currentPropertyInfo.Name, attributeLogicalName);
             }
 
             TypeEntityMapping.Instance.Value.TryAdd(currentType, entityModelType);
+        }
 
-            return entityLogicalName;
+        private string GetCRMAttributeLogicalName(PropertyInfo currentPropertyInfo)
+        {
+            string attributeLogicalName = currentPropertyInfo.Name.ToLowerInvariant();
+            var attributeLogicalNameAttribute = currentPropertyInfo.GetCustomAttribute<FetchXmlAttributeLogicalNameAttribute>(true);
+            if (attributeLogicalNameAttribute != null)
+            {
+                attributeLogicalName = attributeLogicalNameAttribute.LogicalName;
+            }
+
+            return attributeLogicalName;
         }
     }
 }

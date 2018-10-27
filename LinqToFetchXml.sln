@@ -7,6 +7,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinqToFetchXml", "LinqToFet
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinqToFetchXml.Tests", "LinqToFetchXml.Tests\LinqToFetchXml.Tests.csproj", "{03565863-4AD9-46A9-903F-7517A9EE947A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{8BCF6507-4A3C-4C22-B5A7-63B03B7473D5}"
+	ProjectSection(SolutionItems) = preProject
+		doc\Class Diagram = doc\Class Diagram
+		doc\Class Diagram~ = doc\Class Diagram~
+		doc\Documentation.odt = doc\Documentation.odt
+		doc\Layers = doc\Layers
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

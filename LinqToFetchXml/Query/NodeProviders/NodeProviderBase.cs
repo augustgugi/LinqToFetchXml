@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gugi.LinqToFetchXml.QueryGeneration.NodeProviders
+namespace gugi.LinqToFetchXml.Query.NodeProviders
 {
     internal abstract class NodeProviderBase : MethodCallExpressionNodeBase
     {

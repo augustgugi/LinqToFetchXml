@@ -1,5 +1,6 @@
 ﻿using gugi.LinqToFetchXml;
 using LinqToFetchXml.Tests.Executor;
+using LinqToFetchXml.Tests.Mappers;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using System;
@@ -10,11 +11,11 @@ using System.Threading.Tasks;
 
 namespace LinqToFetchXml.Tests.Models
 {
-    class TestContext : FetchXmlContext
+    class TestModelContext : FetchXmlContext
     {
         private IOrganizationService _organizationService;
 
-        public TestContext(IOrganizationService organizationService) : base(new TestQueryExecutor(organizationService))
+        public TestModelContext(IOrganizationService organizationService) : base(new TestQueryExecutor(organizationService))
         {
             _organizationService = organizationService;
 
@@ -26,5 +27,18 @@ namespace LinqToFetchXml.Tests.Models
         public FetchXmlSet<User> Users { get;  }
         public FetchXmlSet<Team> Teams { get;  }
         public FetchXmlSet<BusinessUnit> BusinessUnits { get; }
+
+        
+        public Guid Create(Entity record)
+        {
+            return _organizationService.Create(record);
+        }
+
+        public Guid Create<T>(T record)
+        {
+            Entity ent = CustomEntityModelMapper.ToEntity<T>(record);
+
+            return _organizationService.Create(ent);
+        }
     }
 }

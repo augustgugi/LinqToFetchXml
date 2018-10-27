@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using gugi.LinqToFetchXml.Interfaces;
+using Remotion.Linq;
+using Remotion.Linq.Parsing.Structure;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using gugi.LinqToFetchXml.QueryGeneration.NodeProviders;
-using Microsoft.Xrm.Sdk;
-using Remotion.Linq;
-using Remotion.Linq.Parsing.ExpressionVisitors.Transformation;
-using Remotion.Linq.Parsing.Structure;
-using Remotion.Linq.Parsing.Structure.NodeTypeProviders;
 
 namespace gugi.LinqToFetchXml
 {
-    public sealed class FetchXmlSet<T> : QueryableBase<T>
+    public sealed class FetchXmlSet<T> : QueryableBase<T>, IFetchXmlSet
     {
-        internal FetchXmlSet(string entityLogicalName, IQueryExecutor executor) : base(CreateQueryParser(), executor)
+        internal FetchXmlSet(string entityLogicalName, IQueryParser queryParser, IQueryExecutor executor) : base(queryParser, executor)
         {
             EntityLogicalName = entityLogicalName;
             EntityModelType = typeof(T);
@@ -32,36 +26,5 @@ namespace gugi.LinqToFetchXml
 
         public string EntityLogicalName { get; private set; }
         public Type EntityModelType { get; private set; }
-
-        private static IQueryParser CreateQueryParser()
-        {
-            var customNodeTypeRegistry = new MethodInfoBasedNodeTypeRegistry();
-            // Register custom node parsers here:
-            customNodeTypeRegistry.Register(FilterTypeNodeProvider.SupportedMethods, typeof(FilterTypeNodeProvider));
-            // Alternatively, use the CreateFromTypes factory method.
-            // Use MethodNameBasedNodeTypeRegistry to register parsers by query operator name instead of MethodInfo.
-
-            var nodeTypeProvider = ExpressionTreeParser.CreateDefaultNodeTypeProvider();
-            nodeTypeProvider.InnerProviders.Add(customNodeTypeRegistry);
-
-            var transformerRegistry = ExpressionTransformerRegistry.CreateDefault();
-            // Register custom expression transformers executed _after_ partial evaluation here (this should be the default):
-            // transformerRegistry.Register (new MyExpressionTransformer());
-
-            var processor = ExpressionTreeParser.CreateDefaultProcessor(transformerRegistry);
-
-            // To register custom expression transformers executed _before_ partial evaluation, use this code:
-            // var earlyTransformerRegistry = new ExpressionTransformerRegistry();
-            // earlyTransformerRegistry.Register (new MyEarlyExpressionTransformer());
-            // processor.InnerProcessors.Insert (0, new TransformingExpressionTreeProcessor (tranformationProvider));
-
-            // Add custom processors here (use Insert (0, ...) to add at the beginning):
-            // processor.InnerProcessors.Add (new MyExpressionTreeProcessor());
-
-            var expressionTreeParser = new ExpressionTreeParser(nodeTypeProvider, processor);
-            var queryParser = new QueryParser(expressionTreeParser);
-
-            return queryParser;
-        }
     }
 }

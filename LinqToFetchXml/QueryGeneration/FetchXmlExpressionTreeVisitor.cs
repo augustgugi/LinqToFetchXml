@@ -1,4 +1,5 @@
-﻿using Remotion.Linq.Clauses.Expressions;
+﻿using gugi.LinqToFetchXml.Metadata;
+using Remotion.Linq.Clauses.Expressions;
 using Remotion.Linq.Parsing;
 using System;
 using System.Linq.Expressions;
@@ -188,7 +189,21 @@ namespace gugi.LinqToFetchXml.QueryGeneration
 
         protected override Expression VisitMember(MemberExpression expression)
         {
-            _actualFetchXml.Append(expression.Member.Name);
+            EntityModelType entityModel = null;
+            TypeEntityMapping.Instance.Value.TryGetValue(expression.Member.DeclaringType, out entityModel);
+            if (entityModel != null)
+            {
+                var crmAttributeLogicalName = entityModel.ParameterToAttributeLogicalName[expression.Member.Name];
+
+
+                _actualFetchXml.Append(crmAttributeLogicalName);
+            }
+            else
+            {
+                _actualFetchXml.Append(expression.Member.Name);
+            }
+
+
             return expression;
         }
 

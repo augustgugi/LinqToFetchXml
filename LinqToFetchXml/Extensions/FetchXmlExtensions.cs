@@ -17,6 +17,14 @@ namespace gugi.LinqToFetchXml.Extensions
                 new Expression[] { source.Expression, Expression.Constant(filterType) }));
         }
 
+        public static IQueryable<T> SelectAttributes<T>(this IQueryable<T> source, Expression<Func<T, List<object>>> attributes)
+        {
+            
+
+            return source.Provider.CreateQuery<T>(Expression.Call(GetMethodInfo(SelectAttributes, source, attributes),
+                new Expression[] { source.Expression, Expression.Quote(attributes) }));
+        }
+
         public static MethodInfo GetMethodInfo<T1, T2>(Func<T1, T2> f, T1 unused1)
         {
             return f.Method;
