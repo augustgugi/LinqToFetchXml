@@ -14,6 +14,7 @@ namespace gugi.LinqToFetchXml.QueryGeneration.Models
         }
 
         public string EntityLogicalName { get; set; }
+        public bool AllAttributes { get; set; }
         public List<string> AttributesLogicalNames { get; set; }
     }
 }

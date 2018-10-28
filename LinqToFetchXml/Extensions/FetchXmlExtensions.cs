@@ -1,4 +1,4 @@
-﻿using gugi.LinqToFetchXml.FetchXml;
+﻿using Microsoft.Xrm.Sdk.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gugi.LinqToFetchXml.Extensions
+namespace gugi.LinqToFetchXml
 {
     public static class FetchXmlExtensions
     {
@@ -17,7 +17,7 @@ namespace gugi.LinqToFetchXml.Extensions
                 new Expression[] { source.Expression, Expression.Constant(filterType) }));
         }
 
-        public static IQueryable<T> SelectAttributes<T>(this IQueryable<T> source, Expression<Func<T, List<object>>> attributes)
+        public static IQueryable<T> SelectAttributes<T>(this IQueryable<T> source, Expression<Func<T, FetchXmlAttributes>> attributes)
         {
             
 

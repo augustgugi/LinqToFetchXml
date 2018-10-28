@@ -15,15 +15,14 @@ namespace gugi.LinqToFetchXml
     public abstract class FetchXmlContext
     {
         private FetchXmlQueryExecutor _fetchXmlQueryExecutor;
+        private ModelMetadataRepository _modelMetadataRepository;
 
         public FetchXmlContext(ICustomFetchXmlQueryExecutor userFetchXmlQueryExecutor)
         {
-            UserFetchXmlQueryExecutor = userFetchXmlQueryExecutor;
 
             _fetchXmlQueryExecutor = new FetchXmlQueryExecutor(userFetchXmlQueryExecutor);
+            _modelMetadataRepository = new ModelMetadataRepository();
         }
-
-        public ICustomFetchXmlQueryExecutor UserFetchXmlQueryExecutor { get; }
 
         protected FetchXmlSet<Entity> CreateQuery(string entityLogicalName)
         {
@@ -34,63 +33,11 @@ namespace gugi.LinqToFetchXml
 
         protected FetchXmlSet<T> CreateQuery<T>()
         {
-            string entityLogicalName = GetLogicalName<T>();
+            EntityModelType entityModelType = _modelMetadataRepository.AddModelMetadata<T>();
 
-            FetchXmlSet<T> set = new FetchXmlSet<T>(entityLogicalName, FetchXmlQueryParserLoader.CreateFetchXmlQueryParser(), _fetchXmlQueryExecutor);
+            FetchXmlSet<T> set = new FetchXmlSet<T>(entityModelType.EntityLogicalName, FetchXmlQueryParserLoader.CreateFetchXmlQueryParser(), _fetchXmlQueryExecutor);
 
             return set;
-        }
-
-        private string GetLogicalName<T>()
-        {
-            Type currentType = typeof(T);
-            if (currentType == typeof(Entity))
-            {
-                throw new NotSupportedException("Please use CreateQuery(string entityLogicalName) with Microsoft.Xrm.Sdk.Entity class!");
-            }
-            object entityLogicalNameAttribute = currentType
-                .GetCustomAttributes(typeof(FetchXmlEntityLogicalNameAttribute), true)
-                .FirstOrDefault();
-
-            if (entityLogicalNameAttribute == null)
-            {
-                throw new InvalidOperationException($"Attribute of type {typeof(FetchXmlEntityLogicalNameAttribute)} is not applied on type {typeof(T)}");
-            }
-
-            FetchXmlEntityLogicalNameAttribute fetchXmlEntityLogicalNameAttribute = (FetchXmlEntityLogicalNameAttribute)entityLogicalNameAttribute;
-            string entityLogicalName = fetchXmlEntityLogicalNameAttribute.LogicalName;
-            UpdateMetadata(currentType, entityLogicalName);
-
-            return entityLogicalName;
-        }
-
-        private void UpdateMetadata(Type currentType, string entityLogicalName)
-        {
-            EntityModelType entityModelType = new EntityModelType(entityLogicalName);
-
-            IEnumerable<PropertyInfo> properties = currentType
-                                                            .GetProperties()
-                                                            .Where(pi => pi.CanRead);
-            foreach (var currentPropertyInfo in properties)
-            {
-                string attributeLogicalName = GetCRMAttributeLogicalName(currentPropertyInfo);
-
-                entityModelType.ParameterToAttributeLogicalName.Add(currentPropertyInfo.Name, attributeLogicalName);
-            }
-
-            TypeEntityMapping.Instance.Value.TryAdd(currentType, entityModelType);
-        }
-
-        private string GetCRMAttributeLogicalName(PropertyInfo currentPropertyInfo)
-        {
-            string attributeLogicalName = currentPropertyInfo.Name.ToLowerInvariant();
-            var attributeLogicalNameAttribute = currentPropertyInfo.GetCustomAttribute<FetchXmlAttributeLogicalNameAttribute>(true);
-            if (attributeLogicalNameAttribute != null)
-            {
-                attributeLogicalName = attributeLogicalNameAttribute.LogicalName;
-            }
-
-            return attributeLogicalName;
         }
     }
 }

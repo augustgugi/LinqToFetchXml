@@ -20,10 +20,10 @@ namespace gugi.LinqToFetchXml.QueryGeneration
         {
             var visitor = new FetchXmlQueryModelVisitor();
             visitor.VisitQueryModel(queryModel);
-            return visitor.GetFetchXmlCommand();
+            return visitor.GetQueryMetadata();
         }
 
-        internal QueryMetadata GetFetchXmlCommand()
+        internal QueryMetadata GetQueryMetadata()
         {
             return _queryMetadata;
         }
@@ -56,6 +56,8 @@ namespace gugi.LinqToFetchXml.QueryGeneration
                 else if(bodyClause is SelectAttributesClause)
                 {
                     var actualClause = bodyClause as SelectAttributesClause;
+                    SelectAttributesClauseVisitor selectAttributesClauseVisitor = new SelectAttributesClauseVisitor(actualClause, queryModel);
+                    _queryMetadata.AddSelectAttributes(selectAttributesClauseVisitor.SelectAttributes);
                 }
             }
             base.VisitBodyClauses(bodyClauses, queryModel);
@@ -63,11 +65,11 @@ namespace gugi.LinqToFetchXml.QueryGeneration
 
         public override void VisitSelectClause(SelectClause selectClause, QueryModel queryModel)
         {
-            SelectEntityClauseVisitor selectEntityClauseVisitor = new SelectEntityClauseVisitor(selectClause, queryModel);
-            foreach (var entity in selectEntityClauseVisitor.EntityAttributes.Keys)
-            {
-                _queryMetadata.AddSelectAttributes(entity, selectEntityClauseVisitor.EntityAttributes[entity].ToArray());
-            }
+            //SelectEntityClauseVisitor selectEntityClauseVisitor = new SelectEntityClauseVisitor(selectClause, queryModel);
+            //foreach (var entity in selectEntityClauseVisitor.EntityAttributes.Keys)
+            //{
+            //    _queryMetadata.AddSelectAttributes(entity, selectEntityClauseVisitor.EntityAttributes[entity].ToArray());
+            //}
 
             var selectT = selectClause.GetOutputDataInfo();
             _queryMetadata.ReturningType = selectT.ResultItemType;

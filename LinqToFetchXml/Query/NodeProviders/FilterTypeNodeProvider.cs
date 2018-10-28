@@ -1,4 +1,4 @@
-﻿using gugi.LinqToFetchXml.Extensions;
+﻿using gugi.LinqToFetchXml;
 using gugi.LinqToFetchXml.Query.Clauses;
 using Remotion.Linq;
 using Remotion.Linq.Parsing.Structure.IntermediateModel;

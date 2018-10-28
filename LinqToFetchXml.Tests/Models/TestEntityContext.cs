@@ -19,9 +19,11 @@ namespace LinqToFetchXml.Tests.Models
             _organizationService = organizationService;
 
             BusinessUnits = CreateQuery("bu");
+            Users = CreateQuery("systemuser");
         }
 
         public FetchXmlSet<Entity> BusinessUnits { get; }
+        public FetchXmlSet<Entity> Users { get; }
 
 
         public Guid Create(Entity record)

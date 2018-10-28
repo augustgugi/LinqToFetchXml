@@ -25,13 +25,9 @@ namespace gugi.LinqToFetchXml.QueryGeneration
         public List<LinkEntity> LinkEntities = new List<LinkEntity>();
         private SortedList<int, OrderAttribute> OrderAttributes = new SortedList<int, OrderAttribute>(); // the data is mostlz sorted so we go with SortedList
 
-        public void AddSelectAttributes(string entityLogicalName, params string[] attributes)
+        public void AddSelectAttributes(SelectAttributes selectAttributes)
         {
-            SelectAttributes.Add(new Models.SelectAttributes()
-            {
-                EntityLogicalName = entityLogicalName,
-                AttributesLogicalNames = attributes.ToList()
-            });
+            SelectAttributes.Add(selectAttributes);
         }
         
         private List<string> FromParts { get; set; }
@@ -81,8 +77,15 @@ namespace gugi.LinqToFetchXml.QueryGeneration
             var attributes = SelectAttributes.Where(sa => sa.EntityLogicalName == EntityName).FirstOrDefault();
             if (attributes != null)
             {
-                string attrFetch = String.Join("\n", attributes.AttributesLogicalNames.Select(a => $"<attribute name='{a}' />"));
-                _fetchXml.AppendLine(attrFetch);
+                if (attributes.AllAttributes)
+                {
+                    _fetchXml.AppendLine("<all-attributes/>");
+                }
+                else
+                {
+                    string attrFetch = String.Join("\n", attributes.AttributesLogicalNames.Select(a => $"<attribute name='{a}' />"));
+                    _fetchXml.AppendLine(attrFetch);
+                }
             }
             else
             {

@@ -1,4 +1,5 @@
-﻿using Remotion.Linq;
+﻿using gugi.LinqToFetchXml.Interfaces;
+using Remotion.Linq;
 using Remotion.Linq.Clauses;
 using System;
 using System.Collections.Generic;
@@ -12,10 +13,12 @@ namespace gugi.LinqToFetchXml.Query.Clauses
     class SelectAttributesClause : IBodyClause
     {
         public Expression Expression { get; private set; }
+        public IFetchXmlSet FetchXmlSet { get; private set; }
 
-        public SelectAttributesClause(Expression expression)
+        public SelectAttributesClause(Expression expression, IFetchXmlSet fetchXmlSet)
         {
             Expression = expression;
+            FetchXmlSet = fetchXmlSet;
         }
 
         public void Accept(IQueryModelVisitor visitor, QueryModel queryModel, int index)
@@ -25,7 +28,7 @@ namespace gugi.LinqToFetchXml.Query.Clauses
 
         public IBodyClause Clone(CloneContext cloneContext)
         {
-            return new SelectAttributesClause(Expression);
+            return new SelectAttributesClause(Expression, FetchXmlSet);
         }
 
         public void TransformExpressions(Func<Expression, Expression> transformation)

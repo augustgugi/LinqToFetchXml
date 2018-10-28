@@ -15,10 +15,6 @@ namespace gugi.LinqToFetchXml
             EntityModelType = typeof(T);
         }
 
-        //public FetchXmlSet(IQueryProvider provider) : base(provider)
-        //{
-        //}
-
         // used by Linq
         public FetchXmlSet(IQueryProvider provider, Expression expression) : base(provider, expression)
         {

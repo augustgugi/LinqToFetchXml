@@ -1,7 +1,5 @@
 ﻿using FakeXrmEasy;
 using gugi.LinqToFetchXml;
-using gugi.LinqToFetchXml.Extensions;
-using gugi.LinqToFetchXml.FetchXml;
 using LinqToFetchXml.Tests.Metadata;
 using LinqToFetchXml.Tests.Models;
 using Microsoft.Xrm.Sdk;
@@ -220,9 +218,7 @@ namespace LinqToFetchXml.Tests
                 u => u._teamid.Id, 
                 t => t.Id, 
                 (u, t) => u);
-
-            var expr = p.Expression;
-
+            
             var users = p.ToList();
 
             Assert.NotEmpty(users);
@@ -237,9 +233,7 @@ namespace LinqToFetchXml.Tests
                     join t in testContext.Teams
                     on u._teamid.Id equals t.Id
                     select u;
-
-            var expr = p.Expression;
-
+            
             var users = p.ToList();
 
             Assert.NotEmpty(users);
@@ -249,7 +243,7 @@ namespace LinqToFetchXml.Tests
         public void Select_Custom_Attributes()
         {
             var p = testContext.Users
-                .SelectAttributes(u => new List<object>() { u._name })
+                .SelectAttributes(u => new FetchXmlAttributes( u._name ))
                 .ToList();
 
             Assert.NotNull(p);

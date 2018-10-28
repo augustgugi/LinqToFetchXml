@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using gugi.LinqToFetchXml;
+using Microsoft.Xrm.Sdk.Query;
 
 namespace LinqToFetchXml.Tests
 {
@@ -39,6 +41,10 @@ namespace LinqToFetchXml.Tests
 
             buFilter.Id = testContext.Create(buFilter);
 
+            Entity user = new Entity("systemuser");
+            user["name"] = "August";
+            user["bu_id"] = new EntityReference("bu", buFilter.Id);
+
         }
 
         [Fact]
@@ -55,11 +61,12 @@ namespace LinqToFetchXml.Tests
         public void Retrieve_Specific_Attributes_By_Default()
         {
             var bus = testContext.BusinessUnits
-                .Select(e => new { Name = e["name"] })
+                .SelectAttributes(bu => new FetchXmlAttributes(bu.GetAttributeValue<int>("users"))) //
                 .ToList();
 
             Assert.NotEmpty(bus);
-            Assert.Equal("GUGI", bus[0].Name);
+            Assert.Null(bus.First().GetAttributeValue<string>("name"));
+            Assert.Equal(5, bus.First().GetAttributeValue<int>("users"));
         }
 
         [Fact]
@@ -130,6 +137,19 @@ namespace LinqToFetchXml.Tests
                 .ToList();
 
             Assert.Single(bus);
+        }
+
+        [Fact]
+        public void Inner_Join()
+        {
+            var users = from u in testContext.Users
+                        join bu in testContext.BusinessUnits
+                        on u.GetAttributeValue<object>("bu_id") equals bu.GetAttributeValue<object>("buid")
+                        select u;
+
+            
+
+            Assert.Single(users);
         }
     }
 }
