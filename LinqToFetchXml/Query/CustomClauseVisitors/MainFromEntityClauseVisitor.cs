@@ -12,7 +12,7 @@ namespace gugi.LinqToFetchXml.Query.CustomClauseVisitors.Entity
     class MainFromEntityClauseVisitor
     {
         
-        public MainFromEntityClauseVisitor(MainFromClause fromClause, QueryModel queryModel)
+        public MainFromEntityClauseVisitor(MainFromClause fromClause)
         {
             MainFromEntityExpressionTreeVisitor mainFromEntityExpressionTreeVisitor = new MainFromEntityExpressionTreeVisitor(fromClause.FromExpression);
             EntityLogicalName = mainFromEntityExpressionTreeVisitor.EntityLogicalName;

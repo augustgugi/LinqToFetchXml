@@ -1,5 +1,9 @@
-﻿using gugi.LinqToFetchXml.Metadata;
+﻿using gugi.LinqToFetchXml.Interfaces;
+using gugi.LinqToFetchXml.Metadata;
+using gugi.LinqToFetchXml.Query.CustomClauseVisitors.Entity;
 using Microsoft.Xrm.Sdk;
+using Remotion.Linq.Clauses;
+using Remotion.Linq.Clauses.Expressions;
 using Remotion.Linq.Parsing;
 using System;
 using System.Collections.Generic;
@@ -15,6 +19,7 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
         public Type MemberContainingType { get; private set; }
 
         public string MemberName { get; private set; }
+        public string EntityLogicalName { get; private set; }
 
         public JoinExpressionTreeVisitor(Expression expression)
         {
@@ -32,34 +37,51 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
             {
                 throw new NotSupportedException($"{expression.Method.Name} not supported. Only GetAttributeValue method of {typeof(Entity)} class is allowed!");
             }
+            base.Visit(expression.Object);
             return base.Visit(expression.Arguments.First());
         }
 
         protected override Expression VisitMember(MemberExpression expression)
         {
             MemberName = expression.Member.Name;
-            MemberContainingType = expression.Member.DeclaringType;
+            MemberContainingType = MemberContainingType ?? expression.Member.DeclaringType;
 
             return expression;
         }
 
         protected override Expression VisitConstant(ConstantExpression expression)
         {
-            EntityModelType entityModel = null;
-            TypeEntityMapping.Instance.Value.TryGetValue(expression.Type, out entityModel);
-
-            if (entityModel != null)
+            if (expression.Value is IFetchXmlSet)
             {
-                var crmAttributeLogicalName = entityModel.ParameterToAttributeLogicalName[(string)expression.Value];
-
-
-                MemberName = crmAttributeLogicalName;
-                MemberContainingType = expression.Type;
+                var set = (IFetchXmlSet)expression.Value;
+                MemberContainingType = set.EntityModelType;
+                EntityLogicalName = set.EntityLogicalName;
             }
             else
             {
                 MemberName = (string)expression.Value;
-                MemberContainingType = expression.Type;
+            }
+            
+
+            return expression;
+        }
+
+        protected override Expression VisitQuerySourceReference(QuerySourceReferenceExpression expression)
+        {
+            var tt = expression.ReferencedQuerySource.GetType();
+            if (expression.ReferencedQuerySource is JoinClause)
+            {
+                var clasue = (JoinClause)expression.ReferencedQuerySource;
+                JoinExpressionTreeVisitor joinExpressionTreeVisitor = new JoinExpressionTreeVisitor(clasue.InnerSequence);
+                MemberContainingType = joinExpressionTreeVisitor.MemberContainingType;
+                EntityLogicalName = joinExpressionTreeVisitor.EntityLogicalName;
+            }
+            else if (expression.ReferencedQuerySource is MainFromClause)
+            {
+                var clasue = (MainFromClause)expression.ReferencedQuerySource;
+                MainFromEntityClauseVisitor mainFromEntityClauseVisitor = new MainFromEntityClauseVisitor(clasue);
+                MemberContainingType = mainFromEntityClauseVisitor.EntityType;
+                EntityLogicalName = mainFromEntityClauseVisitor.EntityLogicalName;
             }
 
             return expression;
@@ -67,7 +89,7 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
 
         protected override Exception CreateUnhandledItemException<T>(T unhandledItem, string visitMethod)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException($"Method: {visitMethod}");
         }
     }
 }

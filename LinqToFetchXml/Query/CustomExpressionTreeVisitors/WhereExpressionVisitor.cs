@@ -1,4 +1,5 @@
 ﻿using gugi.LinqToFetchXml.Metadata;
+using gugi.LinqToFetchXml.Query.CustomClauseVisitors.Entity;
 using Microsoft.Xrm.Sdk;
 using Remotion.Linq.Clauses;
 using Remotion.Linq.Clauses.Expressions;
@@ -16,6 +17,9 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
     {
 
         private readonly StringBuilder _actualFetchXml = new StringBuilder();
+
+        private string entityLogicalName = "";
+
         public string Filters { get
             {
                 return _actualFetchXml.ToString();
@@ -40,7 +44,7 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
                 case ExpressionType.Equal:
                     _actualFetchXml.Append("<condition attribute='");
                     base.Visit(expression.Left);
-                    _actualFetchXml.Append("' operator='");
+                    _actualFetchXml.Append("' entityname='" + entityLogicalName + "' operator='");
                     _actualFetchXml.Append("eq");
                     _actualFetchXml.Append("' value='");
                     base.Visit(expression.Right);
@@ -49,7 +53,7 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
                 case ExpressionType.NotEqual:
                     _actualFetchXml.Append("<condition attribute='");
                     base.Visit(expression.Left);
-                    _actualFetchXml.Append("' operator='");
+                    _actualFetchXml.Append("' entityname='" + entityLogicalName + "' operator='");
                     _actualFetchXml.Append("ne");
                     _actualFetchXml.Append("' value='");
                     base.Visit(expression.Right);
@@ -58,7 +62,7 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
                 case ExpressionType.GreaterThanOrEqual:
                     _actualFetchXml.Append("<condition attribute='");
                     base.Visit(expression.Left);
-                    _actualFetchXml.Append("' operator='");
+                    _actualFetchXml.Append("' entityname='" + entityLogicalName + "' operator='");
                     _actualFetchXml.Append("ge");
                     _actualFetchXml.Append("' value='");
                     base.Visit(expression.Right);
@@ -67,7 +71,7 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
                 case ExpressionType.LessThanOrEqual:
                     _actualFetchXml.Append("<condition attribute='");
                     base.Visit(expression.Left);
-                    _actualFetchXml.Append("' operator='");
+                    _actualFetchXml.Append("' entityname='" + entityLogicalName + "' operator='");
                     _actualFetchXml.Append("le");
                     _actualFetchXml.Append("' value='");
                     base.Visit(expression.Right);
@@ -76,7 +80,7 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
                 case ExpressionType.LessThan:
                     _actualFetchXml.Append("<condition attribute='");
                     base.Visit(expression.Left);
-                    _actualFetchXml.Append("' operator='");
+                    _actualFetchXml.Append("' entityname='" + entityLogicalName + "' operator='");
                     _actualFetchXml.Append("lt");
                     _actualFetchXml.Append("' value='");
                     base.Visit(expression.Right);
@@ -85,7 +89,7 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
                 case ExpressionType.GreaterThan:
                     _actualFetchXml.Append("<condition attribute='");
                     base.Visit(expression.Left);
-                    _actualFetchXml.Append("' operator='");
+                    _actualFetchXml.Append("' entityname='" + entityLogicalName + "' operator='");
                     _actualFetchXml.Append("gt");
                     _actualFetchXml.Append("' value='");
                     base.Visit(expression.Right);
@@ -120,13 +124,15 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
             {
                 throw new NotSupportedException($"{expression.Method.Name} not supported. Only GetAttributeValue method of {typeof(Entity)} class is allowed!");
             }
+            base.Visit(expression.Object);
             return base.Visit(expression.Arguments.First());
         }
 
         protected override Expression VisitMember(MemberExpression expression)
         {
-            EntityModelType entityModel = null;
-            TypeEntityMapping.Instance.Value.TryGetValue(expression.Member.DeclaringType, out entityModel);
+            ModelMetadataRepository modelMetadataRepository = new ModelMetadataRepository();
+
+            EntityModelType entityModel = modelMetadataRepository.GetModelMetadata(expression.Member.DeclaringType);
             if (entityModel != null)
             {
                 var crmAttributeLogicalName = entityModel.ParameterToAttributeLogicalName[expression.Member.Name];
@@ -144,8 +150,9 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
 
         protected override Expression VisitConstant(ConstantExpression expression)
         {
-            EntityModelType entityModel = null;
-            TypeEntityMapping.Instance.Value.TryGetValue(expression.Type, out entityModel);
+            ModelMetadataRepository modelMetadataRepository = new ModelMetadataRepository();
+
+            EntityModelType entityModel = modelMetadataRepository.GetModelMetadata(expression.Type);
 
             if (entityModel != null)
             {
@@ -159,6 +166,24 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
                 _actualFetchXml.Append(expression.Value);
             }
             
+            return expression;
+        }
+
+        protected override Expression VisitQuerySourceReference(QuerySourceReferenceExpression expression)
+        {
+            if (expression.ReferencedQuerySource is JoinClause)
+            {
+                var clause = (JoinClause)expression.ReferencedQuerySource;
+                JoinExpressionTreeVisitor joinExpressionTreeVisitor = new JoinExpressionTreeVisitor(clause.InnerSequence);
+                entityLogicalName = joinExpressionTreeVisitor.EntityLogicalName;
+            }
+            else if (expression.ReferencedQuerySource is MainFromClause)
+            {
+                var clasue = (MainFromClause)expression.ReferencedQuerySource;
+                MainFromEntityClauseVisitor mainFromEntityClauseVisitor = new MainFromEntityClauseVisitor(clasue);
+                entityLogicalName = mainFromEntityClauseVisitor.EntityLogicalName;
+            }
+
             return expression;
         }
 

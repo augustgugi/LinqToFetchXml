@@ -19,6 +19,8 @@ namespace LinqToFetchXml.Tests.Models
         [FetchXmlAttributeLogicalName("teamid")]
         public Guid Id { get; set; }
 
+        public EntityReference teamid  { get; set; }
+
         public string _name { get; set; }
 
         public EntityReference _bu { get; set; }

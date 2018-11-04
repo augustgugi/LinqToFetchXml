@@ -67,7 +67,6 @@
     <Compile Include="Interfaces\IFetchXmlSet.cs" />
     <Compile Include="Metadata\EntityModelType.cs" />
     <Compile Include="Metadata\ModelMetadataRepository.cs" />
-    <Compile Include="Metadata\TypeEntityMapping.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryGeneration\Models\LinkEntity.cs" />
     <Compile Include="QueryGeneration\Models\OrderAttribute.cs" />

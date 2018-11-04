@@ -12,7 +12,7 @@ namespace gugi.LinqToFetchXml.Query.CustomClauseVisitors
 {
     internal class JoinClauseVisitor
     {
-        public JoinClauseVisitor(JoinClause joinClause, QueryModel queryModel, int index)
+        public JoinClauseVisitor(JoinClause joinClause, int index)
         {
             Index = index;
 
@@ -31,28 +31,46 @@ namespace gugi.LinqToFetchXml.Query.CustomClauseVisitors
 
         private void HandleFrom(JoinExpressionTreeVisitor from)
         {
+            ModelMetadataRepository modelMetadataRepository = new ModelMetadataRepository();
             EntityModelType entityModelType = null;
-            TypeEntityMapping.Instance.Value.TryGetValue(from.MemberContainingType, out entityModelType);
+            if (from.MemberContainingType != null)
+            {
+                entityModelType = modelMetadataRepository.GetModelMetadata(from.MemberContainingType);
+
+            }
+            
             if (entityModelType == null)
             {
-                throw new InvalidOperationException();
+                FromEntity = from.EntityLogicalName;
+                FromAttribute = from.MemberName;
             }
-
-            FromEntity = entityModelType.EntityLogicalName;
-            FromAttribute = entityModelType.ParameterToAttributeLogicalName[from.MemberName];
+            else
+            {
+                FromEntity = entityModelType.EntityLogicalName;
+                FromAttribute = entityModelType.ParameterToAttributeLogicalName[from.MemberName];
+            }
         }
 
         private void HandleTo(JoinExpressionTreeVisitor to)
         {
+            ModelMetadataRepository modelMetadataRepository = new ModelMetadataRepository();
             EntityModelType entityModelType = null;
-            TypeEntityMapping.Instance.Value.TryGetValue(to.MemberContainingType, out entityModelType);
-            if (entityModelType == null)
+            if (to.MemberContainingType != null)
             {
-                throw new InvalidOperationException();
+                entityModelType = modelMetadataRepository.GetModelMetadata(to.MemberContainingType);
+
             }
 
-            ToEntity = entityModelType.EntityLogicalName;
-            ToAttribute = entityModelType.ParameterToAttributeLogicalName[to.MemberName];
+            if (entityModelType == null)
+            {
+                ToEntity = to.EntityLogicalName;
+                ToAttribute = to.MemberName;
+            }
+            else
+            {
+                ToEntity = entityModelType.EntityLogicalName;
+                ToAttribute = entityModelType.ParameterToAttributeLogicalName[to.MemberName];
+            }
         }
     }
 }

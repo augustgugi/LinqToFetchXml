@@ -68,9 +68,9 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
         protected override Expression VisitMember(MemberExpression expression)
         {
 
-            
-            EntityModelType entityModel = null;
-            TypeEntityMapping.Instance.Value.TryGetValue(expression.Member.DeclaringType, out entityModel);
+            ModelMetadataRepository modelMetadataRepository = new ModelMetadataRepository();
+
+            EntityModelType entityModel = modelMetadataRepository.GetModelMetadata(expression.Member.DeclaringType);
             if (entityModel != null)
             {
                 var crmAttributeLogicalName = entityModel.ParameterToAttributeLogicalName[expression.Member.Name];

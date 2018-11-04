@@ -215,8 +215,8 @@ namespace LinqToFetchXml.Tests
 
             var p = testContext.Users
                 .Join(testContext.Teams, 
-                u => u._teamid.Id, 
-                t => t.Id, 
+                u => u._teamid, 
+                t => t.teamid, 
                 (u, t) => u);
             
             var users = p.ToList();
@@ -231,7 +231,7 @@ namespace LinqToFetchXml.Tests
 
             var p = from u in testContext.Users
                     join t in testContext.Teams
-                    on u._teamid.Id equals t.Id
+                    on u._teamid equals t.teamid
                     select u;
             
             var users = p.ToList();

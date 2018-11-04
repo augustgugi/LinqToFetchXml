@@ -45,6 +45,13 @@ namespace LinqToFetchXml.Tests
             user["name"] = "August";
             user["bu_id"] = new EntityReference("bu", buFilter.Id);
 
+            user.Id = testContext.Create(user);
+
+            Entity user2 = new Entity("systemuser");
+            user2["name"] = "Animal";
+
+            user2.Id = testContext.Create(user2);
+
         }
 
         [Fact]
@@ -148,6 +155,50 @@ namespace LinqToFetchXml.Tests
                         select u;
 
             
+
+            Assert.Single(users);
+        }
+
+        [Fact]
+        public void Inner_Join_With_Condition_In_Joined_Table()
+        {
+            var users = from u in testContext.Users
+                        join bu in testContext.BusinessUnits
+                        on u.GetAttributeValue<object>("bu_id") equals bu.GetAttributeValue<object>("buid")
+                        where bu.GetAttributeValue<string>("name") == "Filter"
+                        select u;
+
+
+
+            Assert.Single(users);
+        }
+
+        [Fact]
+        public void Inner_Join_With_Multiple_Conditions()
+        {
+            var users = from u in testContext.Users
+                        join bu in testContext.BusinessUnits
+                        on u.GetAttributeValue<object>("bu_id") equals bu.GetAttributeValue<object>("buid")
+                        where bu.GetAttributeValue<string>("name") == "Filter"
+                        where u.GetAttributeValue<string>("name") == "August"
+                        select u;
+
+
+
+            Assert.Single(users);
+        }
+
+        [Fact]
+        public void To_String()
+        {
+            var users = (from u in testContext.Users
+                        join bu in testContext.BusinessUnits
+                        on u.GetAttributeValue<object>("bu_id") equals bu.GetAttributeValue<object>("buid")
+                        where bu.GetAttributeValue<string>("name") == "Filter"
+                        where u.GetAttributeValue<string>("name") == "August"
+                        select u).ToString();
+
+
 
             Assert.Single(users);
         }

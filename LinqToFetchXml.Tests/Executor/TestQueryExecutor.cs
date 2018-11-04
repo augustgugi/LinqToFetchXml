@@ -20,7 +20,8 @@ namespace LinqToFetchXml.Tests.Executor
         }
         public IEnumerable<T> ExecuteSync<T>(string fetchXml)
         {
-            EntityCollection entityCollection = _organizationService.RetrieveMultiple(new FetchExpression(fetchXml));
+            var query = new FetchExpression(fetchXml);
+            EntityCollection entityCollection = _organizationService.RetrieveMultiple(query);
 
             if (typeof(T) == typeof(Entity))
             {

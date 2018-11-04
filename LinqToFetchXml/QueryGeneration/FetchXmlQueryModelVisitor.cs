@@ -39,7 +39,7 @@ namespace gugi.LinqToFetchXml.QueryGeneration
         public override void VisitMainFromClause(MainFromClause fromClause, QueryModel queryModel)
         {
 
-            MainFromEntityClauseVisitor mainFromEntityClauseVisitor = new MainFromEntityClauseVisitor(fromClause, queryModel);
+            MainFromEntityClauseVisitor mainFromEntityClauseVisitor = new MainFromEntityClauseVisitor(fromClause);
             _queryMetadata.EntityName = mainFromEntityClauseVisitor.EntityLogicalName;
             _queryMetadata.EntityType = mainFromEntityClauseVisitor.EntityType;
         }
@@ -97,7 +97,7 @@ namespace gugi.LinqToFetchXml.QueryGeneration
         {
             // HQL joins work differently, need to simulate using a cross join with a where condition
 
-            JoinClauseVisitor joinClauseVisitor = new JoinClauseVisitor(joinClause, queryModel, index);
+            JoinClauseVisitor joinClauseVisitor = new JoinClauseVisitor(joinClause, index);
 
             _queryMetadata.AddJoin(joinClauseVisitor.FromEntity, joinClauseVisitor.FromAttribute, joinClauseVisitor.ToEntity, joinClauseVisitor.ToAttribute);
 
