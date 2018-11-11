@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace gugi.LinqToFetchXml.Query.NodeProviders
 {
-    class SelectAttributesNodeProviders : NodeProviderBase
+    internal class SelectAttributesNodeProviders : NodeProviderBase
     {
         public Expression Expression { get; private set; }
         private IFetchXmlSet FetchXmlSet;

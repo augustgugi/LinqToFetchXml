@@ -7,7 +7,7 @@ using System.Text;
 
 namespace gugi.LinqToFetchXml.QueryGeneration
 {
-    public class FetchXmlExpressionTreeVisitor : ThrowingExpressionVisitor
+    internal class FetchXmlExpressionTreeVisitor : ThrowingExpressionVisitor
     {
         private readonly StringBuilder _actualFetchXml = new StringBuilder();
 

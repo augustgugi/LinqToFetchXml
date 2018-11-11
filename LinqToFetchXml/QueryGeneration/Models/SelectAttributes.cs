@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace gugi.LinqToFetchXml.QueryGeneration.Models
 {
-    class SelectAttributes
+    internal class SelectAttributes
     {
         public SelectAttributes()
         {

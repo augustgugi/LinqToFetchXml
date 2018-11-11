@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace gugi.LinqToFetchXml.Query.CustomClauseVisitors.Entity
 {
-    class MainFromEntityClauseVisitor
+    internal class MainFromEntityClauseVisitor
     {
         
         public MainFromEntityClauseVisitor(MainFromClause fromClause)

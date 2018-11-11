@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
 {
-    class WhereExpressionVisitor : ThrowingExpressionVisitor
+    internal class WhereExpressionVisitor : ThrowingExpressionVisitor
     {
 
         private readonly StringBuilder _actualFetchXml = new StringBuilder();

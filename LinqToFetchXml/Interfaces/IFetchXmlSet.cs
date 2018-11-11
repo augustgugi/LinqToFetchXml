@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace gugi.LinqToFetchXml.Interfaces
 {
-    interface IFetchXmlSet
+    internal interface IFetchXmlSet
     {
         string EntityLogicalName { get; }
         Type EntityModelType { get; }

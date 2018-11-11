@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace gugi.LinqToFetchXml.Query.Clauses
 {
-    class SelectAttributesClause : IBodyClause
+    internal class SelectAttributesClause : IBodyClause
     {
         public Expression Expression { get; private set; }
         public IFetchXmlSet FetchXmlSet { get; private set; }

@@ -5,7 +5,7 @@ using System;
 
 namespace gugi.LinqToFetchXml.Query.CustomClauseVisitors
 {
-    class WhereClauseEntityVisitor
+    internal class WhereClauseEntityVisitor
     {
         public WhereClauseEntityVisitor(WhereClause whereClause, QueryModel queryModel)
         {

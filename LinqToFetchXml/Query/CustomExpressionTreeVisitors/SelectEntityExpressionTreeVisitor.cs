@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
 {
-    class SelectEntityExpressionTreeVisitor : ThrowingExpressionVisitor
+    internal class SelectEntityExpressionTreeVisitor : ThrowingExpressionVisitor
     {
         public SelectEntityExpressionTreeVisitor(Expression expression)
         {

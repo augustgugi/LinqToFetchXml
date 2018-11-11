@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace gugi.LinqToFetchXml.QueryGeneration.Models
 {
-    enum OrderDirection
+    internal enum OrderDirection
     {
         Asc,
         Desc
     }
 
-    class OrderAttribute
+    internal class OrderAttribute
     {
         public string EntityLogicalName { get; set; }
         public string AttributeLogicalName { get; set; }
