@@ -1,5 +1,4 @@
 ﻿using gugi.LinqToFetchXml.Interfaces;
-using Microsoft.Xrm.Sdk;
 using Remotion.Linq.Clauses.Expressions;
 using Remotion.Linq.Parsing;
 using System;

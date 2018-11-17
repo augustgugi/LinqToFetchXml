@@ -106,9 +106,7 @@
     <Compile Include="ModelIntegrationTests.cs" />
     <Compile Include="Mappers\CustomEntityModelMapper.cs" />
     <Compile Include="Models\BusinessUnit.cs" />
-    <Compile Include="EntityIntegrationTests.cs" />
     <Compile Include="Models\Team.cs" />
-    <Compile Include="Models\TestEntityContext.cs" />
     <Compile Include="Models\TestModelContext.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

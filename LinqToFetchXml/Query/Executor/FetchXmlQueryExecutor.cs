@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using gugi.LinqToFetchXml.QueryGeneration;
-using Microsoft.Xrm.Sdk;
 using Remotion.Linq;
 
 namespace gugi.LinqToFetchXml.Query.Executor
@@ -53,27 +52,10 @@ namespace gugi.LinqToFetchXml.Query.Executor
 
             var result = ExecuteQuery<T>(queryModel, queryMetadata);
             var asEnumerable = (System.Collections.IEnumerable)(result);
-            var typeofT = typeof(T);
-            if (typeof(T) != queryMetadata.EntityType)
+            foreach (T rec in asEnumerable)
             {
-
-                foreach (Entity rec in asEnumerable)
-                {
-                    dynamic instance = Activator.CreateInstance(queryMetadata.ReturningType, rec["name"]);
-
-                    var asObj = (object)instance;
-                    var asT = (T)instance;
-
-                    yield return asT;
-                }
-            }
-            else
-            {
-                foreach (T rec in asEnumerable)
-                {
-                    yield return rec;
-                };
-            }            
+                yield return rec;
+            };
         }
 
         private object ExecuteQuery<T>(QueryModel queryModel, QueryMetadata queryMetadata)

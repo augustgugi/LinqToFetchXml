@@ -1,5 +1,4 @@
 ﻿using gugi.LinqToFetchXml.Attributes;
-using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -59,10 +58,6 @@ namespace gugi.LinqToFetchXml.Metadata
         private string GetLogicalName<T>()
         {
             Type currentType = typeof(T);
-            if (currentType == typeof(Entity))
-            {
-                throw new NotSupportedException("Please use CreateQuery(string entityLogicalName) with Microsoft.Xrm.Sdk.Entity class!");
-            }
             object entityLogicalNameAttribute = currentType
                 .GetCustomAttributes(typeof(FetchXmlEntityLogicalNameAttribute), true)
                 .FirstOrDefault();

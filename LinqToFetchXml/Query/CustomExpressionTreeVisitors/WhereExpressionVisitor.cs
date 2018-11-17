@@ -1,6 +1,5 @@
 ﻿using gugi.LinqToFetchXml.Metadata;
 using gugi.LinqToFetchXml.Query.CustomClauseVisitors.Entity;
-using Microsoft.Xrm.Sdk;
 using Remotion.Linq.Clauses;
 using Remotion.Linq.Clauses.Expressions;
 using Remotion.Linq.Parsing;
@@ -116,16 +115,6 @@ namespace gugi.LinqToFetchXml.Query.CustomExpressionTreeVisitors
 
 
             return expression;
-        }
-
-        protected override Expression VisitMethodCall(MethodCallExpression expression)
-        {
-            if(expression.Method.Name != "GetAttributeValue")
-            {
-                throw new NotSupportedException($"{expression.Method.Name} not supported. Only GetAttributeValue method of {typeof(Entity)} class is allowed!");
-            }
-            base.Visit(expression.Object);
-            return base.Visit(expression.Arguments.First());
         }
 
         protected override Expression VisitMember(MemberExpression expression)

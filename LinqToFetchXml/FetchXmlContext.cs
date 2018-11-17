@@ -2,7 +2,6 @@
 using gugi.LinqToFetchXml.Metadata;
 using gugi.LinqToFetchXml.Query.Executor;
 using gugi.LinqToFetchXml.Query.Parsers;
-using Microsoft.Xrm.Sdk;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,13 +21,6 @@ namespace gugi.LinqToFetchXml
 
             _fetchXmlQueryExecutor = new FetchXmlQueryExecutor(userFetchXmlQueryExecutor);
             _modelMetadataRepository = new ModelMetadataRepository();
-        }
-
-        protected FetchXmlSet<Entity> CreateQuery(string entityLogicalName)
-        {
-            FetchXmlSet<Entity> set = new FetchXmlSet<Entity>(entityLogicalName, FetchXmlQueryParserLoader.CreateFetchXmlQueryParser(), _fetchXmlQueryExecutor);
-
-            return set;
         }
 
         protected FetchXmlSet<T> CreateQuery<T>()
